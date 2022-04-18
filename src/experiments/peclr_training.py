@@ -27,7 +27,7 @@ from src.utils import get_console_logger, read_json
 def main():
     # get configs
     experiment_type = "hybrid2"
-    experiment_type = "simclr"
+    # experiment_type = "simclr"
     console_logger = get_console_logger(__name__)
     args = get_general_args("Hybrid model 2 training script.")
 

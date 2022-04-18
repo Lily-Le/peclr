@@ -28,13 +28,13 @@ from src.utils import get_console_logger, read_json
 def main():
     # get configs
     experiment_type = "hybrid2"
-    experiment_type = "simclr"
+    # experiment_type = "simclr"
     console_logger = get_console_logger(__name__)
     args = get_general_args("Hybrid model 2 training script.")
 
     train_param = edict(read_json(TRAINING_CONFIG_PATH))
     train_param = update_train_params(args, train_param)
-    model_param_path =  SIMCLR_CONFIG #HYBRID2_CONFIG
+    model_param_path =  HYBRID2_CONFIG #SIMCLR_CONFIG 
     model_param = edict(read_json(model_param_path))
     console_logger.info(f"Train parameters {pformat(train_param)}")
     seed_everything(train_param.seed)
