@@ -27,6 +27,7 @@ from src.utils import get_console_logger, read_json
 def main():
     # get configs
     experiment_type = "hybrid2"
+    experiment_type = "simclr"
     console_logger = get_console_logger(__name__)
     args = get_general_args("Hybrid model 2 training script.")
 
@@ -57,7 +58,8 @@ def main():
     ]
     console_logger.info(f"Model parameters {pformat(model_param)}")
     model = get_model(
-        experiment_type="hybrid2",
+        # experiment_type="hybrid2",
+        experiment_type="simclr",
         heatmap_flag=args.heatmap,
         denoiser_flag=args.denoiser,
     )(config=model_param)
@@ -65,14 +67,14 @@ def main():
     # callbacks
     callbacks = get_callbacks(
         logging_interval=args.log_interval,
-        experiment_type="hybrid2",
+        experiment_type="simclr",
         save_top_k=args.save_top_k,
         period=args.save_period,
     )
     # trainer
     trainer = Trainer(
         accumulate_grad_batches=train_param.accumulate_grad_batches,
-        gpus="0",
+        gpus="1",
         logger=comet_logger,
         max_epochs=train_param.epochs,
         precision=train_param.precision,
