@@ -12,9 +12,33 @@ from src.data_loader.joints import Joints
 from src.utils import read_json
 from torch.utils.data import Dataset
 import random
+from scipy.ndimage.morphology import binary_erosion
 
 BOUND_BOX_SCALE = 0.33
+BG_PIC_PATH = '/misc/lmbraid18/zimmermc/'
+############ Code from HanCo
+def mix(fg_img, mask_fg, bg_img, do_smoothing, do_erosion):
+    """ Mix fg and bg image. Keep the fg where mask_fg is True. """
+    assert bg_img.shape == fg_img.shape
+    fg_img = fg_img.copy()
+    mask_fg = mask_fg.copy()
+    bg_img = bg_img.copy()
 
+    if len(mask_fg.shape) == 2:
+        mask_fg = np.expand_dims(mask_fg, -1)
+
+    if do_erosion:
+        mask_fg = binary_erosion(mask_fg, structure=np.ones((5, 5, 1)) )
+
+    mask_fg = mask_fg.astype(np.float32)
+
+    if do_smoothing:
+        mask_fg = gaussian_filter(mask_fg, sigma=0.5)
+
+    merged = (mask_fg * fg_img + (1.0 - mask_fg) * bg_img).astype(np.uint8)
+    return merged
+
+#############################
 
 class F_DB(Dataset):
     """Class to load samples from the Freihand dataset.
@@ -153,10 +177,10 @@ class F_DB(Dataset):
     
     def read_rnd_background(self, sid, fid, cid, subset):
         # sample rnd background
-        base_path = '/misc/lmbraid18/zimmermc/'
+        base_path =BG_PIC_PATH
         rid = random.randint(0, 1230)
         bg_image_new_path = os.path.join(base_path, 'background_subtraction/background_examples/bg_new/%05d.jpg' % rid)
-        bg_img_new = Image.open(bg_image_new_path)
+        bg_img_new = cv2.cvtColor(cv2.imread(bg_image_new_path),cv2.COLOR_BGR2RGB)
 
         mask_path = 'mask_hand/%04d/cam%d/%08d.jpg' % (sid, cid, fid)
         mask_path = os.path.join(self.base_path, mask_path)
@@ -193,6 +217,8 @@ class F_DB(Dataset):
         idx_ = self.indices[idx]
         img_name = os.path.join(self.img_path, self.img_names[idx_])
         img = cv2.cvtColor(cv2.imread(img_name),cv2.COLOR_BGR2RGB)
+        
+        
         if self.labels is not None:
             camera_param = torch.tensor(self.camera_param[idx_ % 32560]).float()
             joints3D = self.joints.freihand_to_ait(
