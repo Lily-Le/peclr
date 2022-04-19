@@ -150,6 +150,7 @@ class F_DB(Dataset):
         ) + torch.tensor([c[0], c[1], 0])
         return bound_box.float()
 
+
     def __getitem__(self, idx: int) -> dict:
         """Returns a sample corresponding to the index.
 
