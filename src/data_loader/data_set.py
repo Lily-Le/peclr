@@ -16,7 +16,8 @@ class Data_Set(Dataset):
         transform: torchvision.transforms,
         split: str = "train",
         # experiment_type: str = "supervised",
-        experiment_type:str = "hybrid2",
+        # experiment_type:str = "hybrid2",
+        experiment_type: str = "simclr",
         source: str = "freihand",
     ):
         """This class acts as overarching data_loader.
