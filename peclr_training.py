@@ -95,8 +95,8 @@ def main():
         )
     trainer.logger.experiment.log_parameters(train_param)
     trainer.logger.experiment.log_parameters(model_param)
-    # trainer.logger.experiment.add_tags(["pretraining", "HYBRID2"] + args.tag)
-    trainer.logger.experiment.add_tags(["pretraining", "SIMCLR"] + args.tag)
+    trainer.logger.experiment.add_tags(["pretraining", "HYBRID2"] + args.tag)
+    # trainer.logger.experiment.add_tags(["pretraining", "SIMCLR"] + args.tag)
     
     # training
     trainer.fit(model, train_data_loader, val_data_loader)
