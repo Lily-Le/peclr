@@ -8,6 +8,7 @@ from src.data_loader.utils import convert_2_5D_to_3D
 from torch import Tensor
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from scipy.ndimage.morphology import binary_erosion
 
 
 def calculate_epe_statistics(
