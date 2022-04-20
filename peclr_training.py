@@ -60,7 +60,8 @@ def main():
     ]
     console_logger.info(f"Model parameters {pformat(model_param)}")
     model = get_model(
-        experiment_type="hybrid2",#"simclr"
+        # experiment_type="hybrid2",#"simclr"
+        experiment_type="simclr",
         heatmap_flag=args.heatmap,
         denoiser_flag=args.denoiser,
     )(config=model_param)
@@ -68,7 +69,8 @@ def main():
     # callbacks
     callbacks = get_callbacks(
         logging_interval=args.log_interval,
-        experiment_type="hybrid2",#"simclr"
+        # experiment_type="hybrid2",#"simclr"
+        experiment_type="simclr",
         save_top_k=args.save_top_k,
         period=args.save_period,
     )
@@ -95,8 +97,8 @@ def main():
         )
     trainer.logger.experiment.log_parameters(train_param)
     trainer.logger.experiment.log_parameters(model_param)
-    trainer.logger.experiment.add_tags(["pretraining", "HYBRID2"] + args.tag)
-    # trainer.logger.experiment.add_tags(["pretraining", "SIMCLR"] + args.tag)
+    # trainer.logger.experiment.add_tags(["pretraining", "HYBRID2"] + args.tag)
+    trainer.logger.experiment.add_tags(["pretraining", "SIMCLR"] + args.tag)
     
     # training
     trainer.fit(model, train_data_loader, val_data_loader)
