@@ -12,9 +12,33 @@ from src.data_loader.joints import Joints
 from src.utils import read_json
 from torch.utils.data import Dataset
 import random
+from scipy.ndimage.morphology import binary_erosion
 
 BOUND_BOX_SCALE = 0.33
+BG_PIC_PATH = '/misc/lmbraid18/zimmermc/'
+############ Code from HanCo
+def mix(fg_img, mask_fg, bg_img, do_smoothing, do_erosion):
+    """ Mix fg and bg image. Keep the fg where mask_fg is True. """
+    assert bg_img.shape == fg_img.shape
+    fg_img = fg_img.copy()
+    mask_fg = mask_fg.copy()
+    bg_img = bg_img.copy()
 
+    if len(mask_fg.shape) == 2:
+        mask_fg = np.expand_dims(mask_fg, -1)
+
+    if do_erosion:
+        mask_fg = binary_erosion(mask_fg, structure=np.ones((5, 5, 1)) )
+
+    mask_fg = mask_fg.astype(np.float32)
+
+    if do_smoothing:
+        mask_fg = gaussian_filter(mask_fg, sigma=0.5)
+
+    merged = (mask_fg * fg_img + (1.0 - mask_fg) * bg_img).astype(np.uint8)
+    return merged
+
+#############################
 
 class F_DB(Dataset):
     """Class to load samples from the Freihand dataset.
@@ -39,7 +63,7 @@ class F_DB(Dataset):
         self.labels = self.get_labels()
         self.scale = self.get_scale()
         self.camera_param = self.get_camera_param()
-        self.img_names, self.img_path = self.get_image_names()
+        self.img_names, self.img_path,self.mask_path= self.get_image_names()
         self.indices = self.create_train_val_split()
         # To convert from freihand to AIT format.
         self.joints = Joints()
@@ -98,11 +122,13 @@ class F_DB(Dataset):
         """
         if self.split in ["train", "val"]:
             img_path = os.path.join(self.root_dir, "training", "rgb")
+            mask_path = os.path.join(self.root_dir, "training", "mask")
         else:
             img_path = os.path.join(self.root_dir, "evaluation", "rgb")
+            mask_path = os.path.join(self.root_dir, "evaluation", "mask")
         img_names = next(os.walk(img_path))[2]
         img_names.sort()
-        return img_names, img_path
+        return img_names, img_path, mask_path
 
     def get_labels(self) -> list:
         """Extacts the labels(joints coordinates) from the label_json at labels_path
@@ -151,30 +177,29 @@ class F_DB(Dataset):
         ) + torch.tensor([c[0], c[1], 0])
         return bound_box.float()
     
-    def read_rnd_background(self, sid, fid, cid, subset):
-        # sample rnd background
-        base_path = '/misc/lmbraid18/zimmermc/'
-        rid = random.randint(0, 1230)
-        bg_image_new_path = os.path.join(base_path, 'background_subtraction/background_examples/bg_new/%05d.jpg' % rid)
-        bg_img_new = Image.open(bg_image_new_path)
+    # def read_rnd_background(self, sid, fid, cid, subset):
+    #     # sample rnd background
+    #     base_path =BG_PIC_PATH
+    #     rid = random.randint(0, 1230)
+    #     bg_image_new_path = os.path.join(base_path, 'background_subtraction/background_examples/bg_new/%05d.jpg' % rid)
+    #     bg_img_new = cv2.cvtColor(cv2.imread(bg_image_new_path),cv2.COLOR_BGR2RGB)
 
-        mask_path = 'mask_hand/%04d/cam%d/%08d.jpg' % (sid, cid, fid)
-        mask_path = os.path.join(self.base_path, mask_path)
-        mask_fg = Image.open(mask_path)
+    #     mask_path = 'mask_hand/%04d/cam%d/%08d.jpg' % (sid, cid, fid)
+    #     mask_path = os.path.join(self.base_path, mask_path)
+    #     mask_fg = Image.open(mask_path)
 
-        img_path = 'rgb/%04d/cam%d/%08d.jpg' % (sid, cid, fid)
-        img_path = os.path.join(self.base_path, img_path)
-        fg_img = Image.open(img_path)
+    #     img_path = 'rgb/%04d/cam%d/%08d.jpg' % (sid, cid, fid)
+    #     img_path = os.path.join(self.base_path, img_path)
+    #     fg_img = Image.open(img_path)
 
 
-        bg_img_new = np.asarray(bg_img_new.resize(fg_img.size))
-        fg_img = np.asarray(fg_img)
-        mask_fg = (np.asarray(mask_fg) / 255.)[:, :, None]
+    #     bg_img_new = np.asarray(bg_img_new.resize(fg_img.size))
+    #     fg_img = np.asarray(fg_img)
+    #     mask_fg = (np.asarray(mask_fg) / 255.)[:, :, None]
 
-        merged = mix(fg_img, mask_fg, bg_img_new, do_smoothing=True, do_erosion=True)
+    #     merged = mix(fg_img, mask_fg, bg_img_new, do_smoothing=True, do_erosion=True)
 
-        return Image.fromarray(merged)
-
+    #     return Image.fromarray(merged)
 
     def __getitem__(self, idx: int) -> dict:
         """Returns a sample corresponding to the index.
@@ -193,7 +218,23 @@ class F_DB(Dataset):
             idx = idx.tolist()
         idx_ = self.indices[idx]
         img_name = os.path.join(self.img_path, self.img_names[idx_])
-        img = cv2.cvtColor(cv2.imread(img_name),cv2.COLOR_BGR2RGB)
+        mask_name = os.path.join(self.mask_path, self.img_names[idx_])
+        fg_img = cv2.cvtColor(cv2.imread(img_name),cv2.COLOR_BGR2RGB)
+        fg_mask = cv2.cvtColor(cv2.imread(mask_name),cv2.COLOR_BGR2RGB)
+        
+        # Randomly change the backgrounds
+        base_path =BG_PIC_PATH
+        ## Randomly select a background pic
+        rid = random.randint(0, 1230)
+        bg_image_new_path = os.path.join(base_path, 'background_subtraction/background_examples/bg_new/%05d.jpg' % rid)
+        bg_img_new = cv2.cvtColor(cv2.imread(bg_image_new_path),cv2.COLOR_BGR2RGB)
+        
+        rid = random.randint(0, 1230)
+        bg_img_new = np.asarray(bg_img_new.resize(fg_img.size))
+        fg_img = np.asarray(fg_img)
+        fg_mask = (np.asarray(fg_mask) / 255.)[:, :, None]
+
+        merged = mix(fg_img, fg_mask, bg_img_new, do_smoothing=True, do_erosion=True)
         if self.labels is not None:
             camera_param = torch.tensor(self.camera_param[idx_ % 32560]).float()
             joints3D = self.joints.freihand_to_ait(
@@ -207,7 +248,7 @@ class F_DB(Dataset):
             )
         joints_valid = torch.ones_like(joints3D[..., -1:])
         sample = {
-            "image": img,
+            "image": merged,
             "K": camera_param,
             "joints3D": joints3D,
             "joints_valid": joints_valid,
