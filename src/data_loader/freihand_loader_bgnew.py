@@ -9,13 +9,15 @@ import numpy as np
 import torch
 from sklearn.model_selection import train_test_split
 from src.data_loader.joints import Joints
-from src.utils import read_json
+from src.utils import read_json,json_load
 from torch.utils.data import Dataset
 import random
 from scipy.ndimage.morphology import binary_erosion
 
 BOUND_BOX_SCALE = 0.33
-BG_PIC_PATH = '/misc/lmbraid18/zimmermc/'
+BG_PIC_PATH = '/home/d3-ai/cll/HanCo/bg_new'
+BG_IND_PATH ='/home/d3-ai/cll/contra-hand/bg_inds.json'
+
 ############ Code from HanCo
 def mix(fg_img, mask_fg, bg_img, do_smoothing, do_erosion):
     """ Mix fg and bg image. Keep the fg where mask_fg is True. """
@@ -67,7 +69,8 @@ class F_DB(Dataset):
         self.indices = self.create_train_val_split()
         # To convert from freihand to AIT format.
         self.joints = Joints()
-
+        self.bg_inds = json_load(BG_IND_PATH)
+    
     def create_train_val_split(self) -> np.array:
         """Creates split for train and val data in freihand
 
@@ -225,11 +228,12 @@ class F_DB(Dataset):
         # Randomly change the backgrounds
         base_path =BG_PIC_PATH
         ## Randomly select a background pic
-        rid = random.randint(0, 1230)
-        bg_image_new_path = os.path.join(base_path, 'background_subtraction/background_examples/bg_new/%05d.jpg' % rid)
+        rid = random.randint(0, 521)
+        # bg_image_new_path = os.path.join(base_path, 'background_subtraction/background_examples/bg_new/%05d.jpg' % rid)
+        bg_image_new_path = os.path.join(BG_PIC_PATH, self.bg_inds[rid])
         bg_img_new = cv2.cvtColor(cv2.imread(bg_image_new_path),cv2.COLOR_BGR2RGB)
         
-        rid = random.randint(0, 1230)
+ 
         bg_img_new = np.asarray(bg_img_new.resize(fg_img.size))
         fg_img = np.asarray(fg_img)
         fg_mask = (np.asarray(fg_mask) / 255.)[:, :, None]

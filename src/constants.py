@@ -4,7 +4,7 @@ BASE_DIR = "/home/d3-ai/cll/peclr"
 DATA_PATH = BASE_DIR+"/data/raw/"
 FREIHAND_DATA = os.path.join(DATA_PATH, "freihand_dataset")
 YOUTUBE_DATA = os.path.join(DATA_PATH, "youtube_3d_hands", "data")
-
+YOUTUBE_DATA = "/media/d3-ai/E/cll/Dataset/YT3dHands"
 # config paths
 CONFIG_PATH = os.path.join(BASE_DIR, "src", "experiments", "config")
 TRAINING_CONFIG_PATH = os.path.join(CONFIG_PATH, "training_config.json")
@@ -22,7 +22,7 @@ SAVED_META_INFO_PATH =BASE_DIR+ "/data/models"
 STD_LOGGING_FORMAT = "%(name)s -%(levelname)s - %(message)s"
 COMET_KWARGS = {
     "api_key": '6c13icO732zNn3OMiPfrUcFSm',
-    "project_name":'peclr-simclr',
+    "project_name":'peclr-FreiYT3d',
     "workspace": 'peclr',
     "save_dir": SAVED_META_INFO_PATH,
 }

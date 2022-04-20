@@ -3,6 +3,10 @@ from src.constants import STD_LOGGING_FORMAT
 import logging
 from yacs.config import load_cfg
 
+def json_load(file_name):
+    with open(file_name, 'r') as fi:
+        data = json.load(fi)
+    return data
 
 def read_json(file_path: str) -> dict:
     """Reads json file from the given path.
