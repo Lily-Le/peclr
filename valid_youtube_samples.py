@@ -20,14 +20,17 @@ def main():
     
     print("Test data")
     data = YTB_DB(YOUTUBE_DATA, split="test")
+    print("Data created")
     try_data(data)
   
     print("Val data")
     data = YTB_DB(YOUTUBE_DATA, split="val")
+    print("Data created")
     try_data(data)
 
     print("Train data")
     data = YTB_DB(YOUTUBE_DATA)
+    print("Data created")
     try_data(data)
 
 main()

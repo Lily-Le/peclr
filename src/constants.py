@@ -22,7 +22,8 @@ SAVED_META_INFO_PATH =BASE_DIR+ "/data/models"
 STD_LOGGING_FORMAT = "%(name)s -%(levelname)s - %(message)s"
 COMET_KWARGS = {
     "api_key": '6c13icO732zNn3OMiPfrUcFSm',
-    "project_name":'peclr-FreiYT3d',
+    # "project_name":'Hybrid2-FreiYT3d',
+    "project_name":'Hybrid2-Frei-cgbg',
     "workspace": 'peclr',
     "save_dir": SAVED_META_INFO_PATH,
 }

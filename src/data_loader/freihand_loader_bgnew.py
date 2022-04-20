@@ -91,9 +91,9 @@ class F_DB(Dataset):
             train_indices = np.concatenate(
                 (
                     train_indices,
-                    train_indices + num_unique_images,
-                    train_indices + num_unique_images * 2,
-                    train_indices + num_unique_images * 3,
+                    # train_indices + num_unique_images,
+                    # train_indices + num_unique_images * 2,
+                    # train_indices + num_unique_images * 3,
                 ),
                 axis=0,
             )
@@ -103,9 +103,9 @@ class F_DB(Dataset):
             val_indices = np.concatenate(
                 (
                     val_indices,
-                    val_indices + num_unique_images,
-                    val_indices + num_unique_images * 2,
-                    val_indices + num_unique_images * 3,
+                    # val_indices + num_unique_images,
+                    # val_indices + num_unique_images * 2,
+                    # val_indices + num_unique_images * 3,
                 ),
                 axis=0,
             )
@@ -129,7 +129,8 @@ class F_DB(Dataset):
         else:
             img_path = os.path.join(self.root_dir, "evaluation", "rgb")
             mask_path = os.path.join(self.root_dir, "evaluation", "mask")
-        img_names = next(os.walk(img_path))[2]
+        # img_names = next(os.walk(img_path))[2]
+        img_names = next(os.walk(mask_path))[2]
         img_names.sort()
         return img_names, img_path, mask_path
 
