@@ -236,8 +236,12 @@ class F_DB(Dataset):
         bg_img_new = cv2.cvtColor(cv2.imread(bg_image_new_path),cv2.COLOR_BGR2RGB)
 
         fg_img = np.asarray(fg_img)
-        tmp__ = np.asarray(np.resize(bg_img_new,fg_img.shape))
-        bg_img_new = tmp__
+        # bg_img_new=bg_img_new.copy()
+        h, w = fg_img.shape[:2]
+
+        bg_img_new=cv2.resize(bg_img_new, (w,h))#,interpolation=cv2.INTER_CUBIC)
+        # bg_img_new= np.asarray(bg_img_new.resize(fg_img.shape,refcheck=False))
+        # bg_img_new = tmp__
         fg_mask = (np.asarray(fg_mask) / 255.)[:, :, None]
 
         merged = mix(fg_img, fg_mask, bg_img_new, do_smoothing=True, do_erosion=True)
