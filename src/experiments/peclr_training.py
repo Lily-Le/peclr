@@ -58,8 +58,8 @@ def main():
     ]
     console_logger.info(f"Model parameters {pformat(model_param)}")
     model = get_model(
-        # experiment_type="hybrid2",
-        experiment_type="simclr",
+        experiment_type="hybrid2",
+        # experiment_type="simclr",
         heatmap_flag=args.heatmap,
         denoiser_flag=args.denoiser,
     )(config=model_param)
@@ -67,7 +67,8 @@ def main():
     # callbacks
     callbacks = get_callbacks(
         logging_interval=args.log_interval,
-        experiment_type="simclr",
+        # experiment_type="simclr",
+        experiment_type="hybrid2",
         save_top_k=args.save_top_k,
         period=args.save_period,
     )

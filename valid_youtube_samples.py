@@ -15,6 +15,7 @@ def try_data(data):
         print("Everything seems fine, the valid-invalid csv is upto date!")
     else:
         print(f"HOOPLA!  Unable to read {counter} samples")
+        
 def main():
    
     

@@ -76,7 +76,7 @@ def main():
     trainer = Trainer(
         accumulate_grad_batches=train_param.accumulate_grad_batches,
         # resume_from_checkpoint='/home/d3-ai/cll/peclr/data/models/peclr-hybrid2-dataset/85f483d400744f2f9950c0fa3c879ee0/checkpoints/epoch=35.ckpt',
-        gpus="0",
+        gpus="1",
         logger=comet_logger,
         max_epochs=train_param.epochs,
         precision=train_param.precision,

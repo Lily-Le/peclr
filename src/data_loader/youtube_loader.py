@@ -22,7 +22,8 @@ class YTB_DB(Dataset):
     Camera matrix is unity to fit with the sample augmenter.
     """
 
-    def __init__(self, root_dir: str, split: str = "train"):
+    # def __init__(self, root_dir: str, split: str = "train"):
+    def __init__(self, root_dir: str, split: str = "val"):
         self.root_dir = root_dir
         self.split = split
         self.joints_list, self.img_list = self.get_joints_labels_and_images()
@@ -181,6 +182,7 @@ class YTB_DB(Dataset):
         image = []
         counter = 0
         for idx_ in tqdm(range(len(self.joints_list))):
+            t=self.root_dir, self.img_dict[self.joints_list[idx_]["image_id"]]["name"]
             img_name = os.path.join(
                 self.root_dir, self.img_dict[self.joints_list[idx_]["image_id"]]["name"]
             ).replace(".png", ".jpg")

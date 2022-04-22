@@ -1,5 +1,6 @@
 import os
 
+from scipy.ndimage import gaussian_filter
 from torch.tensor import Tensor
 from src.data_loader.utils import convert_2_5D_to_3D
 from typing import List, Tuple
@@ -224,7 +225,7 @@ class F_DB(Dataset):
         img_name = os.path.join(self.img_path, self.img_names[idx_])
         mask_name = os.path.join(self.mask_path, self.img_names[idx_])
         fg_img = cv2.cvtColor(cv2.imread(img_name),cv2.COLOR_BGR2RGB)
-        fg_mask = cv2.cvtColor(cv2.imread(mask_name),cv2.COLOR_BGR2RGB)
+        fg_mask = cv2.cvtColor(cv2.imread(mask_name),cv2.COLOR_BGR2GRAY)
         
         # Randomly change the backgrounds
         base_path =BG_PIC_PATH
@@ -233,10 +234,10 @@ class F_DB(Dataset):
         # bg_image_new_path = os.path.join(base_path, 'background_subtraction/background_examples/bg_new/%05d.jpg' % rid)
         bg_image_new_path = os.path.join(BG_PIC_PATH, self.bg_inds[rid])
         bg_img_new = cv2.cvtColor(cv2.imread(bg_image_new_path),cv2.COLOR_BGR2RGB)
-        
- 
-        bg_img_new = np.asarray(bg_img_new.resize(fg_img.size))
+
         fg_img = np.asarray(fg_img)
+        tmp__ = np.asarray(np.resize(bg_img_new,fg_img.shape))
+        bg_img_new = tmp__
         fg_mask = (np.asarray(fg_mask) / 255.)[:, :, None]
 
         merged = mix(fg_img, fg_mask, bg_img_new, do_smoothing=True, do_erosion=True)
