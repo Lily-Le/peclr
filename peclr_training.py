@@ -75,7 +75,11 @@ def main():
     # trainer
     trainer = Trainer(
         accumulate_grad_batches=train_param.accumulate_grad_batches,
+<<<<<<< HEAD
         # resume_from_checkpoint='/home/d3-ai/cll/peclr/data/models/Hybrid2-Frei-cgbgr/9a5d29db6f584042a53343cbe9faa5c0/checkpoints/epoch=69.ckpt',
+=======
+        resume_from_checkpoint='/home/d3-ai/cll/peclr/data/models/Hybrid2-Frei-cgbgr/9a5d29db6f584042a53343cbe9faa5c0/checkpoints/epoch=69.ckpt',
+>>>>>>> d062636e079e25f1860f8760fa75d63616132613
         gpus="1",
         logger=comet_logger,
         max_epochs=train_param.epochs,
