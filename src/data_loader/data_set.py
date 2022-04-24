@@ -2,8 +2,8 @@ import torch
 import torchvision
 from easydict import EasyDict as edict
 from src.constants import FREIHAND_DATA, YOUTUBE_DATA
-# from src.data_loader.freihand_loader import F_DB
-from src.data_loader.freihand_loader_bgnew import F_DB
+from src.data_loader.freihand_loader import F_DB
+# from src.data_loader.freihand_loader_bgnew import F_DB
 from src.data_loader.sample_augmenter import SampleAugmenter
 from src.data_loader.utils import convert_2_5D_to_3D, convert_to_2_5D, JOINTS
 from src.data_loader.youtube_loader import YTB_DB

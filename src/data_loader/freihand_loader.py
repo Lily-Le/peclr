@@ -151,29 +151,29 @@ class F_DB(Dataset):
         ) + torch.tensor([c[0], c[1], 0])
         return bound_box.float()
     
-    def read_rnd_background(self, sid, fid, cid, subset):
-        # sample rnd background
-        base_path = '/misc/lmbraid18/zimmermc/'
-        rid = random.randint(0, 1230)
-        bg_image_new_path = os.path.join(base_path, 'background_subtraction/background_examples/bg_new/%05d.jpg' % rid)
-        bg_img_new = Image.open(bg_image_new_path)
-
-        mask_path = 'mask_hand/%04d/cam%d/%08d.jpg' % (sid, cid, fid)
-        mask_path = os.path.join(self.base_path, mask_path)
-        mask_fg = Image.open(mask_path)
-
-        img_path = 'rgb/%04d/cam%d/%08d.jpg' % (sid, cid, fid)
-        img_path = os.path.join(self.base_path, img_path)
-        fg_img = Image.open(img_path)
-
-
-        bg_img_new = np.asarray(bg_img_new.resize(fg_img.size))
-        fg_img = np.asarray(fg_img)
-        mask_fg = (np.asarray(mask_fg) / 255.)[:, :, None]
-
-        merged = mix(fg_img, mask_fg, bg_img_new, do_smoothing=True, do_erosion=True)
-
-        return Image.fromarray(merged)
+    # def read_rnd_background(self, sid, fid, cid, subset):
+    #     # sample rnd background
+    #     base_path = '/misc/lmbraid18/zimmermc/'
+    #     rid = random.randint(0, 1230)
+    #     bg_image_new_path = os.path.join(base_path, 'background_subtraction/background_examples/bg_new/%05d.jpg' % rid)
+    #     bg_img_new = Image.open(bg_image_new_path)
+    #
+    #     mask_path = 'mask_hand/%04d/cam%d/%08d.jpg' % (sid, cid, fid)
+    #     mask_path = os.path.join(self.base_path, mask_path)
+    #     mask_fg = Image.open(mask_path)
+    #
+    #     img_path = 'rgb/%04d/cam%d/%08d.jpg' % (sid, cid, fid)
+    #     img_path = os.path.join(self.base_path, img_path)
+    #     fg_img = Image.open(img_path)
+    #
+    #
+    #     bg_img_new = np.asarray(bg_img_new.resize(fg_img.size))
+    #     fg_img = np.asarray(fg_img)
+    #     mask_fg = (np.asarray(mask_fg) / 255.)[:, :, None]
+    #
+    #     merged = mix(fg_img, mask_fg, bg_img_new, do_smoothing=True, do_erosion=True)
+    #
+    #     return Image.fromarray(merged)
 
 
     def __getitem__(self, idx: int) -> dict:

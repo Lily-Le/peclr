@@ -49,13 +49,13 @@ def peclr_to_torchvision(resnet_model, path_to_peclr_weights):
 
 
 def main():
+    # resnet152 = torchvision.models.resnet152(pretrained=True)
+    # # NOTE: This path is just for demonstration.
+    # peclr_to_torchvision(resnet152,"data/models/637ab5816c43483181143d6189cc39ff/checkpoints/epoch=3.ckpt")
+    
     resnet50 = torchvision.models.resnet50(pretrained=True)
     # NOTE: This path is just for demonstration.
-    peclr_to_torchvision(resnet50,"/home/d3-ai/cll/peclr/data/models/Hybrid2-Frei/1ac6412faad64e6d80fb4b3380d0c6bc/rn50epoch177.ckpt")
-    
-    # resnet18 = torchvision.models.resnet18(pretrained=True)
-    # # NOTE: This path is just for demonstration.
-    # peclr_to_torchvision(resnet18,"/home/d3-ai/cll/peclr/data/models/Hybrid2-Frei/1ac6412faad64e6d80fb4b3380d0c6bc/checkpoints/epoch=161.ckpt")
+    peclr_to_torchvision(resnet50,"/home/d3-ai/cll/peclr/data/models/Hybrid2-Frei/1ac6412faad64e6d80fb4b3380d0c6bc/epoch=177.ckpt")
 
 if __name__=='__main__':
     main()
