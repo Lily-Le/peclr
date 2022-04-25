@@ -14,11 +14,13 @@ from src.utils import read_json,json_load
 from torch.utils.data import Dataset
 import random
 from scipy.ndimage.morphology import binary_erosion
+import matplotlib.pyplot as plt
 
 BOUND_BOX_SCALE = 0.33
-BG_PIC_PATH = '/home/d3-ai/cll/HanCo/bg_new'
-BG_IND_PATH ='/home/d3-ai/cll/contra-hand/bg_inds.json'
-
+# BG_PIC_PATH = '/home/d3-ai/cll/HanCo/bg_new'
+# BG_IND_PATH ='/home/d3-ai/cll/contra-hand/bg_inds.json'
+BG_PIC_PATH ='/home/zlc/cll/data/bg_new'
+BG_IND_PATH ='/home/zlc/cll/data/bg_inds.json'
 ############ Code from HanCo
 def mix(fg_img, mask_fg, bg_img, do_smoothing, do_erosion):
     """ Mix fg and bg image. Keep the fg where mask_fg is True. """
@@ -104,9 +106,9 @@ class F_DB(Dataset):
             val_indices = np.concatenate(
                 (
                     val_indices,
-                    # val_indices + num_unique_images,
-                    # val_indices + num_unique_images * 2,
-                    # val_indices + num_unique_images * 3,
+                    val_indices + num_unique_images,
+                    val_indices + num_unique_images * 2,
+                    val_indices + num_unique_images * 3,
                 ),
                 axis=0,
             )

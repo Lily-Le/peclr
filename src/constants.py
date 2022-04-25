@@ -1,5 +1,5 @@
 import os
-BASE_DIR = "/home/d3-ai/cll/peclr"
+BASE_DIR = "/home/zlc/cll/code/peclr_cbg"
 # Data paths
 DATA_PATH = BASE_DIR+"/data/raw/"
 FREIHAND_DATA = os.path.join(DATA_PATH, "freihand_dataset")
@@ -23,11 +23,8 @@ STD_LOGGING_FORMAT = "%(name)s -%(levelname)s - %(message)s"
 COMET_KWARGS = {
     "api_key": '6c13icO732zNn3OMiPfrUcFSm',
     # "project_name":'Hybrid2-FreiYT3d',
-<<<<<<< HEAD
-    "project_name":'Hybrid2-Frei',
-=======
-    "project_name":'Hybrid2-Frei-cgbgr',
->>>>>>> d062636e079e25f1860f8760fa75d63616132613
+    # "project_name":'Hybrid2-Frei',
+    "project_name":'Hybrid2-Frei-cgbgr-debug',
     "workspace": 'peclr',
     "save_dir": SAVED_META_INFO_PATH,
 }
