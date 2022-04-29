@@ -1,7 +1,8 @@
 import os
+BASE_DIR0 = "/home/zlc/cll/code/peclr"
 BASE_DIR = "/home/zlc/cll/code/peclr_cbg"
 # Data paths
-DATA_PATH = BASE_DIR+"/data/raw/"
+DATA_PATH = BASE_DIR0+"/data/raw/"
 FREIHAND_DATA = os.path.join(DATA_PATH, "freihand_dataset")
 YOUTUBE_DATA = os.path.join(DATA_PATH, "youtube_3d_hands", "data")
 YOUTUBE_DATA = "/media/d3-ai/E/cll/Dataset/YT3dHands"

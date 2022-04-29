@@ -11,8 +11,8 @@ from src.constants import (
     BASE_DIR,
     TRAINING_CONFIG_PATH,
 )
-from src.data_loader.data_set import Data_Set
-from src.data_loader.utils import get_data, get_train_val_split
+from src.data_loader.data_set_cbg import Data_Set
+from src.data_loader.utils import get_data_cbg, get_train_val_split
 from src.experiments.utils import (
     get_callbacks,
     get_general_args,
@@ -39,9 +39,26 @@ def main():
     model_param = edict(read_json(model_param_path))
     console_logger.info(f"Train parameters {pformat(train_param)}")
     seed_everything(train_param.seed)
-
+    '''
     # data preperation
-    data = get_data(
+    # DataLoader: return  sample = {
+        #     "image": fg_img,
+        #     "mask": fg_mask, 
+        #     "K": camera_param,
+        #     "joints3D": joints3D,
+        #     "joints_valid": joints_valid,
+        # }
+    # Data_set: (in hybrid2 experiment I commented the to tensor & norm here)
+    #  return {
+    #         **{"transformed_image1": img1, "transformed_image2": img2},
+    #         **{"mask": sample["mask"]},
+    #         **{f"{k}_1": v for k, v in param1.items() if v is not None},
+    #         **{f"{k}_2": v for k, v in param2.items() if v is not None},
+    #     }
+    # 
+    # get_data: dataset concatnate
+    '''
+    data = get_data_cbg(
         Data_Set, train_param, sources=args.sources, experiment_type=experiment_type
     )
 
@@ -50,6 +67,9 @@ def main():
     train_data_loader, val_data_loader = get_train_val_split(
         data, batch_size=train_param.batch_size, num_workers=train_param.num_workers
     )
+
+
+    
     # For the returned samples in one batch, change the backgrounds accordingly
     # Logger
     experiment_name = prepare_name(

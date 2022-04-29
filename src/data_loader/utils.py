@@ -301,6 +301,32 @@ def get_data(
     data = ConcatDataset(datasets)
     return data
 
+#delete norm & to tensor
+def get_data_cbg(
+    data_class, train_param, sources: list, experiment_type: str, split: str = "train"
+):
+    datasets = []
+    sources = ["freihand"] if len(sources) == 0 else sources
+    for source in sources:
+        datasets.append(
+            data_class(
+                config=train_param,
+                transform=transforms.Compose(
+                    [
+                        transforms.ToTensor(),
+                        transforms.Normalize(
+                            (0.485, 0.456, 0.406), (0.229, 0.224, 0.225)
+                        ),
+                    ]
+                ),
+                split=split,
+                experiment_type=experiment_type,
+                source=source,
+            )
+        )
+
+    data = ConcatDataset(datasets)
+    return data
 
 def get_zroot_constraint_terms(
     joints_25D: JOINTS_25D, K_inv: torch.Tensor, is_batch: bool

@@ -2,7 +2,7 @@ import torch
 import torchvision
 from easydict import EasyDict as edict
 from src.constants import FREIHAND_DATA, YOUTUBE_DATA
-from src.data_loader.freihand_loader import F_DB
+from src.data_loader.freihand_loader_cbg import F_DB
 # from src.data_loader.freihand_loader_bgnew import F_DB
 from src.data_loader.sample_augmenter import SampleAugmenter
 from src.data_loader.utils import convert_2_5D_to_3D, convert_to_2_5D, JOINTS
@@ -376,12 +376,15 @@ class Data_Set(Dataset):
         param2 = self.get_random_augment_param(augmenter)
 
         # Applying only image related transform
-        if self.transform:
-            img1 = self.transform(img1)
-            img2 = self.transform(img2)
+        # Do the below to tensor & norm later
+
+        # if self.transform: 
+        #     img1 = self.transform(img1)
+        #     img2 = self.transform(img2)
 
         return {
             **{"transformed_image1": img1, "transformed_image2": img2},
+            **{"mask": sample["mask"]},
             **{f"{k}_1": v for k, v in param1.items() if v is not None},
             **{f"{k}_2": v for k, v in param2.items() if v is not None},
         }
