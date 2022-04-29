@@ -94,6 +94,7 @@ def pred(img_orig, K_orig, scale, model, T):
     # Create feed dict
     feed = {"image": img.float().to(dev), "K": K.float().to(dev)}
     # Predict
+    
     with torch.no_grad():
         output = model(feed)
     kp2d = output["kp25d"][:, :21, :2][0]
