@@ -106,9 +106,9 @@ class F_DB(Dataset):
             val_indices = np.concatenate(
                 (
                     val_indices,
-                    val_indices + num_unique_images,
-                    val_indices + num_unique_images * 2,
-                    val_indices + num_unique_images * 3,
+                    # val_indices + num_unique_images,
+                    # val_indices + num_unique_images * 2,
+                    # val_indices + num_unique_images * 3,
                 ),
                 axis=0,
             )

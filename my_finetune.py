@@ -1,4 +1,6 @@
+#%%
 from __future__ import print_function, unicode_literals
+#%%
 import sys
 import json
 
@@ -27,138 +29,133 @@ from testing.fh_utils import (
 BBOX_SCALE = 0.33
 CROP_SIZE = 224
 # DS_PATH = "/hdd/Datasets/freihand_dataset/"
-DS_PATH = "/home/d3-ai/cll/peclr/data/raw/freihand_dataset"
+DS_PATH = "/home/dlc/cll/peclr/data/raw/freihand_dataset"
+#%%
+from pprint import pformat
+from easydict import EasyDict as edict
+from pytorch_lightning import Trainer, seed_everything
+from pytorch_lightning.loggers import CometLogger
+from src.constants import (
+    COMET_KWARGS,
+    HYBRID2_CONFIG,
+    SIMCLR_CONFIG ,
+    BASE_DIR,
+    TRAINING_CONFIG_PATH,
+)
+from src.data_loader.data_set_cbg import Data_Set
+from src.data_loader.utils import get_data_cbg, get_train_val_split
 
-def main(base_path, pred_func, out_name, set_name=None):
-    """
-    Main eval loop: Iterates over all evaluation samples and saves the corresponding 
-    predictions.
-    """
-    # default value
-    if set_name is None:
-        set_name = "evaluation"
-    # init output containers
-    xyz_pred_list, verts_pred_list = list(), list()
-    K_list = json_load(os.path.join(base_path, "%s_K.json" % set_name))
-    scale_list = json_load(os.path.join(base_path, "%s_scale.json" % set_name))
-    # iterate over the dataset once
-    for idx in tqdm(range(db_size(set_name))):
-        if idx >= db_size(set_name):
-            break
-
-        # load input image
-        img = read_img(idx, base_path, set_name)
-        # use some algorithm for prediction
-        xyz, verts = pred_func(img, np.array(K_list[idx]), scale_list[idx])
-        xyz_pred_list.append(xyz)
-        verts_pred_list.append(verts)
-
-    # dump results
-    dump(xyz_pred_list, verts_pred_list, out_name)
-
-
-def dump(xyz_pred_list, verts_pred_list, out_name):
-    """ Save predictions into a json file. """
-    # make sure its only lists
-    xyz_pred_list = [x.tolist() for x in xyz_pred_list]
-    verts_pred_list = [x.tolist() for x in verts_pred_list]
-
-    # Filter out ID
-    out_ID = out_name.split("_")[-1]
-    if not os.path.isdir("out"):
-        os.mkdir("out")
-    # save to a json
-    json_name = f"out/pred_{out_ID}"
-    with open(f"{json_name}.json", "w") as fo:
-        json.dump([xyz_pred_list, verts_pred_list], fo)
-    print(
-        "Dumped %d joints and %d verts predictions to %s"
-        % (len(xyz_pred_list), len(verts_pred_list), "%s.json" % json_name)
-    )
-    subprocess.call(["zip", "-j", "%s.zip" % json_name, "%s.json" % json_name])
-
-
-def pred(img_orig, K_orig, scale, model, T):
-    """ 
-    Predict joints and vertices from a given sample.
-    img: (224, 224, 30 RGB image.
-    K: (3, 3) camera intrinsic matrix.
-    scale: () scalar metric length of the reference bone.
-    1. Get 2D predictions of IMG
-    2. Create bbox based on 2D prediction
-    3. Reproject bbox into original image
-    4. Adjust it how it is done in training
-    5. Re-crop hand based on adjusted bbox
-    6. Perform prediction again on new crop
-    """
-    img, K = preprocess(img_orig, K_orig, T, CROP_SIZE)
-    # Create feed dict
-    feed = {"image": img.float().to(dev), "K": K.float().to(dev)}
-    # Predict
+from src.experiments.utils import (
+    get_callbacks,
+    get_general_args,
+    get_model,
+    prepare_name,
+    save_experiment_key,
+    update_model_params,
+    update_train_params,
+)
+from src.utils import get_console_logger, read_json
+experiment_type = "hybrid2"
+# experiment_type = "simclr"
+console_logger = get_console_logger(__name__)
+args=[ 
+                "--color_jitter",
+                "--random_crop",
+                "--rotate", 
+                "--crop",
+                "-resnet_size", "50",  
+                "-sources", "freihand", 
+                "--resize",   
+                "-epochs", "500", 
+                "-batch_size","128",  
+                "-accumulate_grad_batches", "16", 
+                "-save_top_k", "1",  
+                "-save_period", "1",   
+                "-num_workers", "8"
+                # // "-d", "./kodim",
+                # // "--epochs","300", 
+                # // "-lr", "1e-4", 
+                # // "--batch-size", "1",
+                # // "--cuda", "--save",
+                # // "--test-batch-size", "1"
+            ]
+# get_general_args("Hybrid model 2 training script.")
+with open('args128.json','r+') as file:
+    content=file.read()
     
-    with torch.no_grad():
-        output = model(feed)
-    kp2d = output["kp25d"][:, :21, :2][0]
-    bbox = get_bbox_from_pose(kp2d.cpu().numpy())
-    # Apply inverse affine transform
-    bbox = np.concatenate((bbox.reshape(2, 2).T, np.ones((1, 2))), axis=0)
-    bbox = np.matmul(np.linalg.inv(T)[:2], bbox)
-    bbox = bbox.T.reshape(4)
-    # Recreate affine transform
-    T = create_affine_transform_from_bbox(bbox, CROP_SIZE)
-    img, K = preprocess(img_orig, K_orig, T, CROP_SIZE)
-    # Create feed dict
-    feed = {"image": img.float().to(dev), "K": K.float().to(dev)}
-    # Predict again
-    with torch.no_grad():
-        output = model(feed)
-
-    kp3d = output["kp3d"].view(-1, 3)[:21].cpu().numpy().astype(np.float64)
-    # Move palm to wrist
-    kp3d = move_palm_to_wrist(kp3d)
-    # Convert to Zimmermanns representation
-    kp3d = convert_order(kp3d)
-    # Unscale (scale is in meters)
-    kp3d = kp3d * scale
-    # We do not care about vertices
-    verts = np.zeros((778, 3))
-
-    assert not np.any(np.isnan(kp3d)), "NaN detected"
-
-    return kp3d, verts
-
-
-if __name__ == "__main__":
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("--model_path", type=str, required=True)
-    # args = parser.parse_args()
-
-    # model_path = args.model_path
-    model_path="/home/zlc/cll/code/peclr_cbg/data/models/hybrid2-frei-bs256/43e469c718b94cbb870c593209820b72/checkpoints/epoch=286.ckpt"
-    dev = torch.device("cuda")
-    model_type = "rn50"
-    # if "rn50" in model_path:
-    #     model_type = "rn50"
-    # elif "rn152" in model_path:
-    #     model_type = "rn152"
-    # else:
-    #     raise Exception(
-    #         "Cannot infer model_type from model_path. Did you rename the .pth file?"
-    #     )
-    model_ = Hybrid2Model(backend_model=model_type)
-    checkpoint = torch.load(model_path)
-    model_.load_state_dict(checkpoint["state_dict"])
-    model_.eval()
-    model_.to(dev)
-    model = lambda feed: model_(feed["image"], feed["K"])
-    # Create initial bbox
-    bbox = np.array([0, 0, CROP_SIZE, CROP_SIZE], dtype=np.float32)
-    bbox = modify_bbox(bbox, BBOX_SCALE)
-    T = create_affine_transform_from_bbox(bbox, CROP_SIZE)
-    # call with a predictor function
-    main(
-        DS_PATH,
-        pred_func=lambda img, K, scale: pred(img, K, scale, model, T),
-        out_name=model_type,
-        set_name="evaluation",
+content=json.loads(content)
+args=argparse.Namespace(**content)
+# args = get_general_args("Simclr model training script.")
+train_param = edict(read_json(TRAINING_CONFIG_PATH))
+train_param = update_train_params(args, train_param)
+# model_param_path = SIMCLR_CONFIG
+model_param_path = HYBRID2_CONFIG  # SIMCLR_CONFIG
+model_param = edict(read_json(model_param_path))
+console_logger.info(f"Train parameters {pformat(train_param)}")
+seed_everything(train_param.seed)
+data = get_data_cbg(
+        Data_Set, train_param, sources=args.sources, experiment_type=experiment_type
     )
+model_param = update_model_params(model_param, args, len(data), train_param)
+model_param.augmentation = [
+key for key, value in train_param.augmentation_flags.items() if value
+]
+console_logger.info(f"Model parameters {pformat(model_param)}")
+model = get_model(
+experiment_type="hybrid2",#"simclr"
+heatmap_flag=args.heatmap,
+denoiser_flag=args.denoiser,
+)(config=model_param)
+model=Hybrid2Model(config=model_param)
+
+model_path = '/home/zlc/cll/code/peclr_cbg/data/models/hybrid2-frei-bs256/epoch=286.ckpt'
+dev = torch.device("cuda")
+checkpoint=torch.load(model_path)
+model=Hybrid2Model(config=model_param)
+model.load_state_dict(checkpoint['state_dict'])
+model.eval()
+#%%
+# import cv2
+# img_name = "/home/zlc/cll/code/peclr/data/raw/freihand_dataset/training/rgb/00000000.jpg"
+# img = cv2.cvtColor(cv2.imread(img_name),cv2.COLOR_BGR2RGB)
+
+# import matplotlib.pyplot as plt
+# plt.imshow(img)
+# trafo = lambda x: np.transpose(x[:, :, ::-1], [2, 0, 1]).astype(np.float32) / 255.0 - 0.5
+# img_t = trafo(img)
+# batch = torch.Tensor(np.stack([img_t], 0)).cuda()
+
+#%%
+from src.data_loader.data_set_cbg import Data_Set
+from torchvision import transforms
+from torch.utils.data import DataLoader
+train_param = edict(
+    read_json("./src/experiments/config/training_config.json")
+)
+train_param.augmentation_flags.resize = True
+train_param.augmentation_flags.random_crop = True
+train_data = Data_Set(
+    config=train_param,
+    transform=transforms.ToTensor(),
+    split="train",
+    experiment_type="supervised",
+    source="freihand",
+)
+train_data.is_training=False
+# print(da)
+data_loader = DataLoader(train_data, batch_size=128, num_workers=4)
+# data = get_data_cbg(
+#         Data_Set, train_param, sources=args.sources, experiment_type="supervised"
+#     )
+
+#%%
+emb=[]
+print(len(data_loader))
+for i in enumerate(data_loader):
+    # print(len(i))
+    # print(i[1].keys())
+    # break
+    print(len(i[1]['image']))
+    tmp=model.get_encodings(i[1]['image'])
+    emb+=tmp
+

@@ -2,15 +2,16 @@ import torch
 import torchvision
 from easydict import EasyDict as edict
 from src.constants import FREIHAND_DATA, YOUTUBE_DATA
-from src.data_loader.freihand_loader_cbg import F_DB
+from src.data_loader.freihand_loader_cbg import F_DB_cbg
 # from src.data_loader.freihand_loader_bgnew import F_DB
 from src.data_loader.sample_augmenter import SampleAugmenter
 from src.data_loader.utils import convert_2_5D_to_3D, convert_to_2_5D, JOINTS
 from src.data_loader.youtube_loader import YTB_DB
 from torch.utils.data import Dataset
+from torchvision import transforms
 
 
-class Data_Set(Dataset):
+class Data_Set_cbg(Dataset):
     def __init__(
         self,
         config: edict,
@@ -61,7 +62,7 @@ class Data_Set(Dataset):
 
     def initialize_data_loaders(self):
         if self.source == "freihand":
-            self.db = F_DB(
+            self.db = F_DB_cbg(
                 root_dir=FREIHAND_DATA,
                 split=self._split,
                 train_ratio=self.config.train_ratio,
@@ -82,6 +83,8 @@ class Data_Set(Dataset):
             sample = self.prepare_experiment4_pretraining(sample, self.augmenter)
         elif self.experiment_type == "hybrid2":
             sample = self.prepare_hybrid2_sample(sample, self.augmenter)
+        elif self.experiment_type == "test":
+            sample = self.prepare_supervised_sample(sample)
         else:
             sample = self.prepare_supervised_sample(sample, self.augmenter)
         return sample
@@ -119,6 +122,14 @@ class Data_Set(Dataset):
             sample["image"], joints25D.clone(), override_angle, overrride_jitter
         )
 
+        self.transform=transforms.Compose(
+                            [
+                                transforms.ToTensor(),
+                                transforms.Normalize(
+                                    (0.485, 0.456, 0.406), (0.229, 0.224, 0.225)
+                                ),
+                            ]
+                        ),
         # Applying only image related transform
         if self.transform:
             img1 = self.transform(img1)
@@ -378,9 +389,9 @@ class Data_Set(Dataset):
         # Applying only image related transform
         # Do the below to tensor & norm later
 
-        # if self.transform: 
-        #     img1 = self.transform(img1)
-        #     img2 = self.transform(img2)
+        if self.transform: 
+            img1 = self.transform(img1)
+            img2 = self.transform(img2)
 
         return {
             **{"transformed_image1": img1, "transformed_image2": img2},

@@ -46,7 +46,7 @@ def peclr_to_torchvision(resnet_model, path_to_peclr_weights):
                 break
     else:
         raise Exception(f"The selected model is not of type ResNet from torch vision!")
-
+    return own_state
 
 def main():
     # resnet152 = torchvision.models.resnet152(pretrained=True)
@@ -54,8 +54,11 @@ def main():
     # peclr_to_torchvision(resnet152,"data/models/637ab5816c43483181143d6189cc39ff/checkpoints/epoch=3.ckpt")
     
     resnet50 = torchvision.models.resnet50(pretrained=True)
+    resnet50_2 = torchvision.models.resnet50(pretrained=True)
     # NOTE: This path is just for demonstration.
-    peclr_to_torchvision(resnet50,"/home/d3-ai/cll/peclr/data/models/Hybrid2-Frei/1ac6412faad64e6d80fb4b3380d0c6bc/epoch=177.ckpt")
-
+    model_path = '/home/zlc/cll/code/peclr_cbg/data/models/hybrid2-frei-bs256/epoch=286.ckpt'
+    state_dic=peclr_to_torchvision(resnet50,model_path)
+    resnet50_2.load_state_dict(state_dic)
+    torch.save(resnet50,'frei_pretrained_res50.pth')
 if __name__=='__main__':
     main()
