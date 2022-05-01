@@ -57,8 +57,9 @@ def main():
     resnet50_2 = torchvision.models.resnet50(pretrained=True)
     # NOTE: This path is just for demonstration.
     model_path = '/home/zlc/cll/code/peclr_cbg/data/models/hybrid2-frei-bs256/epoch=286.ckpt'
+    model_path = '/home/zlc/cll/code/peclr/data/models/hybrid2-frei-cgbgr/566c9864e9e648fab0011ee69b9fa255/epoch=296.ckpt'
     state_dic=peclr_to_torchvision(resnet50,model_path)
     resnet50_2.load_state_dict(state_dic)
-    torch.save(resnet50,'frei_pretrained_res50.pth')
+    torch.save(resnet50,'frei_pretrained_cgb_ep296_res50.pth')
 if __name__=='__main__':
     main()

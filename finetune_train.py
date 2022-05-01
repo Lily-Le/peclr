@@ -43,12 +43,19 @@ from torchvision import transforms
 from tqdm.notebook import tqdm
 from src.finetune.my_wrap import Wrap_Resnet
 # from tensorboard.summary import 
-path_pretrained_res='/home/zlc/cll/code/peclr_cbg/data/models/finetune/hybrid2_frei_bs256_ep286_r50.pth'
-lr=0.001
-device='cuda'
-epochs=300
-batch_size=64
+use_pretrain=True
+save_base='/home/zlc/cll/code/peclr_cbg/data/models/finetune/hybrid2_frei_bs256_ep286_r50/'
+save_base='/home/zlc/cll/code/peclr_cbg/data/models/finetune/imgnet_r50/'
+save_base='/home/zlc/cll/code/peclr_cbg/data/models/finetune/hybrid2_frei_cgb_ep296_r50/'
 
+path_pretrained_res='/home/zlc/cll/code/peclr_cbg/data/models/finetune/hybrid2_frei_bs256_ep286_r50.pth'
+
+path_pretrained_res='/home/zlc/cll/code/peclr_cbg/data/models/finetune/frei_pretrained_cgb_ep296_res50.pth'
+lr=0.001
+device='cuda:1'
+epochs=3
+batch_size=64
+os.mkdir(save_base)
 #%%
 train_loader = torch.utils.data.DataLoader(
     senz3d_train,
@@ -89,7 +96,10 @@ criterion = nn.CrossEntropyLoss()
 
 #%% Prepare Model
 num_classes=senz3d_train.class_num()
-model=Wrap_Resnet(path_pretrained_res,num_classes)
+if use_pretrain:
+    model=Wrap_Resnet(num_classes,path_pretrained_res)
+else:
+    model=Wrap_Resnet(num_classes)
 model=model.to(device)
 
 #%%
@@ -143,8 +153,22 @@ for epoch in range(epochs):
     print(
         f"Epoch : {epoch+1} - loss : {epoch_loss:.4f} - acc: {epoch_accuracy:.4f} - val_loss : {epoch_val_loss:.4f} - val_acc: {epoch_val_accuracy:.4f}\n"
     )
+    if (epoch%20==1):
+        torch.save(model.state_dict(), os.path.join(save_base,f'Para_hybrid2_frei_bs256_ep286_r50_ep{epoch}.pth') )
+
+#%%
+#save model
+# save_base='/home/zlc/cll/code/peclr_cbg/data/models/finetune/hybrid2_frei_bs256_ep286_r50/'
+
+torch.save(model, os.path.join(save_base,'Whole_hybrid2_frei_bs256_ep286_r50.pth') )
 
 
+# 保存网络中的参数, 速度快，占空间少
+torch.save(model.state_dict(),os.path.join(save_base,'Para_hybrid2_frei_bs256_ep286_r50.pth') )
+np.save(save_base+'Accuracy_list.npy',Accuracy_list)
+np.save(save_base+'Accuracy__val_list.npy',Accuracy_val_list)
+np.save(save_base+'Loss_val_list.npy',Loss_val_list)
+np.save(save_base+'Loss_list.npy',Loss_list)
 
 
 # scheduler = StepLR(optimizer, step_size=1, gamma=gamma)
@@ -195,3 +219,50 @@ for epoch in range(epochs):
 #                 break
 
 # %%
+import matplotlib.pyplot as plt
+import numpy as np
+x = range(epochs)
+Accuracy_list=np.load(save_base+'Accuracy_list.npy')
+Accuracy_val_list=np.load(save_base+'Accuracy_val_list.npy')
+Loss_list=np.load(save_base+'Loss_list.npy')
+Loss_val_list=np.load(save_base+'Loss_val_list.npy')
+
+
+fig=plt.figure(figsize=(10,10))
+ax=fig.add_subplot(220+1)
+ax.plot( Accuracy_list,label='train_acc')
+ax.plot(Accuracy_val_list, label = 'val_acc')
+ax.set_xlabel('Epoch')
+ax.set_ylabel('Accuracy')
+#plt.ylim([0.5, 1])
+ax.set_title('Accuracy vs. epoches')
+ax.legend(loc='lower right')
+
+ax=fig.add_subplot(220+1)
+plt.subplot(2, 1, 1)
+plt.plot( Accuracy_list,label='train_acc')
+plt.plot(Accuracy_val_list, label = 'val_acc')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+
+y_major_locator=plt.MultipleLocator(0.1)
+#把y轴刻度间隔0.1
+ax=plt.gca()
+ax.yaxis.set_major_locator(y_major_locator)
+
+plt.ylim([0, 1])
+plt.title('Accuracy vs. epoches')
+plt.legend(loc='lower right')
+
+plt.subplot(2, 1, 2)
+plt.plot(Loss_list,label='train_loss')
+plt.plot(Loss_val_list,label='val_loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.title('Loss vs. epoches')
+plt.legend(loc='upper right')
+
+fig.tight_layout()
+
+plt.savefig('AccLoss_ViTTangoMulti.png',bbox_inches='tight')
+plt.show()

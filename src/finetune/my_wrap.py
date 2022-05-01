@@ -5,17 +5,20 @@ from torchvision import models
 
 
 class Wrap_Resnet(nn.Module):
-    def __init__(self, model_path,num_classes,backend_model="rn50", ):
+    def __init__(self, num_classes,model_path=None,backend_model="rn50", ):
         super().__init__()
         # Initialize a torchvision resnet
         if backend_model == "rn50":
-            model_func = models.resnet50
+            model_func = models.resnet50(pretrained=True)
         elif backend_model == "rn152":
-            model_func = models.resnet152
+            model_func = models.resnet152(pretrained=True)
         else:
             raise Exception(f"Unknown backend_model: {backend_model}")
         # backend_model = model_func()
-        backend_model = torch.load(model_path)
+        if(model_path==None):
+            backend_model=models.resnet50(pretrained=True)
+        else:
+            backend_model = torch.load(model_path)
         # backend_model.load_state_dict(checkpoint["state_dict"])
         num_feat = backend_model.fc.in_features
         # 2D + zrel for 21 keypoints: 3 * 21. Please ignore +1, it is no longer used
