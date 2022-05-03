@@ -72,7 +72,7 @@ class F_DB_cbg(Dataset):
         self.indices = self.create_train_val_split()
         # To convert from freihand to AIT format.
         self.joints = Joints()
-        self.bg_inds = json_load(BG_IND_PATH)
+        # self.bg_inds = json_load(BG_IND_PATH)
     
     def create_train_val_split(self) -> np.array:
         """Creates split for train and val data in freihand
@@ -229,6 +229,7 @@ class F_DB_cbg(Dataset):
         fg_img = cv2.cvtColor(cv2.imread(img_name),cv2.COLOR_BGR2RGB)
         fg_mask = cv2.cvtColor(cv2.imread(mask_name),cv2.COLOR_BGR2GRAY)
         
+        '''
         # Randomly change the backgrounds
         base_path =BG_PIC_PATH
         ## Randomly select a background pic
@@ -236,17 +237,20 @@ class F_DB_cbg(Dataset):
         # bg_image_new_path = os.path.join(base_path, 'background_subtraction/background_examples/bg_new/%05d.jpg' % rid)
         bg_image_new_path = os.path.join(BG_PIC_PATH, self.bg_inds[rid])
         bg_img_new = cv2.cvtColor(cv2.imread(bg_image_new_path),cv2.COLOR_BGR2RGB)
-
+        '''
         fg_img = np.asarray(fg_img)
+        fg_mask = (np.asarray(fg_mask) / 255.)[:, :, None]
+        '''
         # bg_img_new=bg_img_new.copy()
         h, w = fg_img.shape[:2]
 
         bg_img_new=cv2.resize(bg_img_new, (w,h))#,interpolation=cv2.INTER_CUBIC)
         # bg_img_new= np.asarray(bg_img_new.resize(fg_img.shape,refcheck=False))
         # bg_img_new = tmp__
-        fg_mask = (np.asarray(fg_mask) / 255.)[:, :, None]
+        
 
         merged = mix(fg_img, fg_mask, bg_img_new, do_smoothing=True, do_erosion=True)
+        '''
         if self.labels is not None:
             camera_param = torch.tensor(self.camera_param[idx_ % 32560]).float()
             joints3D = self.joints.freihand_to_ait(
@@ -260,7 +264,7 @@ class F_DB_cbg(Dataset):
             )
         joints_valid = torch.ones_like(joints3D[..., -1:])
         sample = {
-            "image": merged,#fg_img,
+            "image": fg_img,
             "mask": fg_mask, 
             "K": camera_param,
             "joints3D": joints3D,

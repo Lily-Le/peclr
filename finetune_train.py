@@ -47,7 +47,7 @@ use_pretrain=True
 save_base='/home/zlc/cll/code/peclr_cbg/data/models/finetune/hybrid2_frei_bs256_ep286_r50/'
 save_base='/home/zlc/cll/code/peclr_cbg/data/models/finetune/imgnet_r50/'
 save_base='/home/zlc/cll/code/peclr_cbg/data/models/finetune/hybrid2_frei_cgb_ep296_r50/'
-
+# save_base = ''
 path_pretrained_res='/home/zlc/cll/code/peclr_cbg/data/models/finetune/hybrid2_frei_bs256_ep286_r50.pth'
 
 path_pretrained_res='/home/zlc/cll/code/peclr_cbg/data/models/finetune/frei_pretrained_cgb_ep296_res50.pth'
@@ -92,7 +92,6 @@ criterion = nn.CrossEntropyLoss()
 
 # loss = criterion(output, target)
 # optimizer
-
 
 #%% Prepare Model
 num_classes=senz3d_train.class_num()

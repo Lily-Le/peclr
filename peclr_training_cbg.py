@@ -11,7 +11,7 @@ from src.constants import (
     BASE_DIR,
     TRAINING_CONFIG_PATH,
 )
-from src.data_loader.data_set_cbg import Data_Set
+from src.data_loader.data_set_cbg import Data_Set_cbg
 from src.data_loader.utils import get_data_cbg, get_train_val_split
 from src.experiments.utils import (
     get_callbacks,
@@ -59,7 +59,7 @@ def main():
     # get_data: dataset concatnate
     '''
     data = get_data_cbg(
-        Data_Set, train_param, sources=args.sources, experiment_type=experiment_type
+        Data_Set_cbg, train_param, sources=args.sources, experiment_type=experiment_type
     )
 
     # Control the backround of positive and negative samples

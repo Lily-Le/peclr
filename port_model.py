@@ -2,7 +2,7 @@ import torch
 import torchvision
 import torch
 from tqdm import tqdm
-
+import os
 
 def peclr_to_torchvision(resnet_model, path_to_peclr_weights):
     """Copies parameters from trained peclr model to a corresponding resent from torchvision.
@@ -53,13 +53,18 @@ def main():
     # # NOTE: This path is just for demonstration.
     # peclr_to_torchvision(resnet152,"data/models/637ab5816c43483181143d6189cc39ff/checkpoints/epoch=3.ckpt")
     
-    resnet50 = torchvision.models.resnet50(pretrained=True)
-    resnet50_2 = torchvision.models.resnet50(pretrained=True)
+    resnet50 = torchvision.models.resnet18(pretrained=True)
+    # resnet50_2 = torchvision.models.resnet18(pretrained=True)
     # NOTE: This path is just for demonstration.
     model_path = '/home/zlc/cll/code/peclr_cbg/data/models/hybrid2-frei-bs256/epoch=286.ckpt'
     model_path = '/home/zlc/cll/code/peclr/data/models/hybrid2-frei-cgbgr/566c9864e9e648fab0011ee69b9fa255/epoch=296.ckpt'
+    model_path = '/home/zlc/cll/code/peclr_cbg/data/models_res18/hybrid2-frei-cgbg-correct/66e551fefbd14447ab967161e9af9c0c/checkpoints/epoch=29.ckpt'
+    model_path = '/home/zlc/cll/code/peclr/data/models_res18/hybrid2-ori-data4/7992e56f43e34e75b3771644670c5898/checkpoints/epoch=29.ckpt'
     state_dic=peclr_to_torchvision(resnet50,model_path)
-    resnet50_2.load_state_dict(state_dic)
-    torch.save(resnet50,'frei_pretrained_cgb_ep296_res50.pth')
+    # resnet50_2.load_state_dict(state_dic)
+    save_path = '/home/zlc/cll/code/peclr/data/models_res18/hybrid2-ori-data4/7992e56f43e34e75b3771644670c5898/port_model/'
+    if not(os.path.exists(save_path)):
+        os.mkdir(save_path)
+    torch.save(resnet50,save_path+'epoch=29.pth')
 if __name__=='__main__':
     main()

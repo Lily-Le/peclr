@@ -4,7 +4,7 @@ from easydict import EasyDict as edict
 from src.constants import FREIHAND_DATA, YOUTUBE_DATA
 from src.data_loader.freihand_loader_cbg import F_DB_cbg
 # from src.data_loader.freihand_loader_bgnew import F_DB
-from src.data_loader.sample_augmenter import SampleAugmenter
+from src.data_loader.sample_augmenter_cbg import SampleAugmenter
 from src.data_loader.utils import convert_2_5D_to_3D, convert_to_2_5D, JOINTS
 from src.data_loader.youtube_loader import YTB_DB
 from torch.utils.data import Dataset
@@ -376,16 +376,18 @@ class Data_Set_cbg(Dataset):
             # Zero jitter is added incase the cropping is off. It is done to trigger the
             # cropping but always with no translation in image.
             override_jitter = [0, 0]
+
+        #####---simultaneously change the ori img and the hand mask
         img1, joints1, _ = augmenter.transform_sample(
-            sample["image"], joints25D.clone(), None, override_jitter
+            sample["image"], sample["mask"],joints25D.clone(), None, override_jitter
         )
         param1 = self.get_random_augment_param(augmenter)
 
         img2, joints2, _ = augmenter.transform_sample(
-            sample["image"], joints25D.clone(), None, override_jitter
+            sample["image"],sample["mask"], joints25D.clone(), None, override_jitter
         )
         param2 = self.get_random_augment_param(augmenter)
-
+        #####---
         # Applying only image related transform
         # Do the below to tensor & norm later
 

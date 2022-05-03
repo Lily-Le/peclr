@@ -13,20 +13,23 @@ SUPERVISED_CONFIG_PATH = os.path.join(CONFIG_PATH, "supervised_config.json")
 SIMCLR_CONFIG = os.path.join(CONFIG_PATH, "simclr_config.json")
 
 SSL_CONFIG = os.path.join(CONFIG_PATH, "semi_supervised_config.json")
-HYBRID2_CONFIG = os.path.join(CONFIG_PATH, "hybrid2_config.json")
-
+#------------------------------
+HYBRID2_CONFIG = os.path.join(CONFIG_PATH, "hybrid2_config_res18.json")
+SAVED_MODELS_BASE_PATH = BASE_DIR+"/data/models_res18/peclr"
+SAVED_META_INFO_PATH =BASE_DIR+ "/data/models_res18"
+#------------------------------
 DOWNSTREAM_CONFIG = os.path.join(CONFIG_PATH, "downstream_config.json")
 
 ANGLES = [i for i in range(10, 360, 10)]
-SAVED_MODELS_BASE_PATH = BASE_DIR+"/data/models/peclr"
-SAVED_META_INFO_PATH =BASE_DIR+ "/data/models"
+# SAVED_MODELS_BASE_PATH = BASE_DIR+"/data/models/peclr"
+# SAVED_META_INFO_PATH =BASE_DIR+ "/data/models"
 STD_LOGGING_FORMAT = "%(name)s -%(levelname)s - %(message)s"
 COMET_KWARGS = {
     "api_key": '6c13icO732zNn3OMiPfrUcFSm',
     # "project_name":'Hybrid2-FreiYT3d',
     # "project_name":'Hybrid2-Frei',
-    "project_name":'Hybrid2-Frei-cgbgr-debug',
-    "workspace": 'peclr',
+    "project_name":'hybrid2-frei-cgbg-correct',
+    "workspace": 'peclr-res18',
     "save_dir": SAVED_META_INFO_PATH,
 }
 
