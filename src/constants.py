@@ -28,7 +28,7 @@ COMET_KWARGS = {
     "api_key": '6c13icO732zNn3OMiPfrUcFSm',
     # "project_name":'Hybrid2-FreiYT3d',
     # "project_name":'Hybrid2-Frei',
-    "project_name":'hybrid2-frei-cgbg-correct',
+    "project_name":'hybrid2-frei-cgbg',
     "workspace": 'peclr-res18',
     "save_dir": SAVED_META_INFO_PATH,
 }

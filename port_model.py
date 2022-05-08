@@ -56,15 +56,26 @@ def main():
     resnet50 = torchvision.models.resnet18(pretrained=True)
     # resnet50_2 = torchvision.models.resnet18(pretrained=True)
     # NOTE: This path is just for demonstration.
-    model_path = '/home/zlc/cll/code/peclr_cbg/data/models/hybrid2-frei-bs256/epoch=286.ckpt'
-    model_path = '/home/zlc/cll/code/peclr/data/models/hybrid2-frei-cgbgr/566c9864e9e648fab0011ee69b9fa255/epoch=296.ckpt'
-    model_path = '/home/zlc/cll/code/peclr_cbg/data/models_res18/hybrid2-frei-cgbg-correct/66e551fefbd14447ab967161e9af9c0c/checkpoints/epoch=29.ckpt'
-    model_path = '/home/zlc/cll/code/peclr/data/models_res18/hybrid2-ori-data4/7992e56f43e34e75b3771644670c5898/checkpoints/epoch=29.ckpt'
+    base_path = '/home/zlc/cll/code/peclr/data/models_res18/hybrid2-ori-data4/7992e56f43e34e75b3771644670c5898/'
+    epoch=299
+    checkpoint = f'checkpoints/epoch={epoch}.ckpt'
+    model_path=os.path.join(base_path,checkpoint)
+
+    if not(os.path.exists(base_path)):
+        os.mkdir(base_path)
+    # model_path = '/home/zlc/cll/code/peclr_cbg/data/models/hybrid2-frei-bs256/epoch=286.ckpt'
+    # model_path = '/home/zlc/cll/code/peclr/data/models/hybrid2-frei-cgbgr/566c9864e9e648fab0011ee69b9fa255/epoch=296.ckpt'
+    # model_path = '/home/zlc/cll/code/peclr_cbg/data/models_res18/hybrid2-frei-cgbg-correct/66e551fefbd14447ab967161e9af9c0c/checkpoints/epoch=29.ckpt'
+    # model_path = '/home/zlc/cll/code/peclr/data/models_res18/hybrid2-ori-data4/7992e56f43e34e75b3771644670c5898/checkpoints/epoch=29.ckpt'
+    # model_path='/home/zlc/cll/code/peclr/data/models_res18/hybrid2-ori-data4/7992e56f43e34e75b3771644670c5898/checkpoints/epoch=44.ckpt'
+
     state_dic=peclr_to_torchvision(resnet50,model_path)
+    save_path = os.path.join(base_path,f'port_model/epoch={epoch}.pth')
     # resnet50_2.load_state_dict(state_dic)
-    save_path = '/home/zlc/cll/code/peclr/data/models_res18/hybrid2-ori-data4/7992e56f43e34e75b3771644670c5898/port_model/'
-    if not(os.path.exists(save_path)):
-        os.mkdir(save_path)
-    torch.save(resnet50,save_path+'epoch=29.pth')
+    # save_path = '/home/zlc/cll/code/peclr/data/models_res18/hybrid2-ori-data4/7992e56f43e34e75b3771644670c5898/port_model/'
+    
+    torch.save(resnet50,save_path)
+    statedic_path=os.path.join(base_path,f'port_model/epoch={epoch}_state.pth')
+    torch.save(resnet50.state_dict(),statedic_path)
 if __name__=='__main__':
     main()

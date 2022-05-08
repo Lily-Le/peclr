@@ -2,9 +2,13 @@ import torch
 import torchvision
 from easydict import EasyDict as edict
 from src.constants import FREIHAND_DATA, YOUTUBE_DATA
+#########################改改改
 from src.data_loader.freihand_loader_cbg import F_DB_cbg
+from src.data_loader.freihand_loader_cbg import F_DB_cbg_inc
 # from src.data_loader.freihand_loader_bgnew import F_DB
-from src.data_loader.sample_augmenter_cbg import SampleAugmenter
+#########################改改改
+# from src.data_loader.sample_augmenter_cbg import SampleAugmenter
+from src.data_loader.sample_augmenter import SampleAugmenter
 from src.data_loader.utils import convert_2_5D_to_3D, convert_to_2_5D, JOINTS
 from src.data_loader.youtube_loader import YTB_DB
 from torch.utils.data import Dataset
@@ -62,7 +66,8 @@ class Data_Set_cbg(Dataset):
 
     def initialize_data_loaders(self):
         if self.source == "freihand":
-            self.db = F_DB_cbg(
+            #############################改改改
+            self.db = F_DB_cbg_inc(
                 root_dir=FREIHAND_DATA,
                 split=self._split,
                 train_ratio=self.config.train_ratio,
@@ -82,7 +87,10 @@ class Data_Set_cbg(Dataset):
             # for simclr ablative, for nips A1
             sample = self.prepare_experiment4_pretraining(sample, self.augmenter)
         elif self.experiment_type == "hybrid2":
-            sample = self.prepare_hybrid2_sample(sample, self.augmenter)
+            #################################改改改
+            # sample = self.prepare_hybrid2_sample(sample, self.augmenter)
+            
+            sample = self.prepare_hybrid2_sample_inc(sample, self.augmenter)
         elif self.experiment_type == "test":
             sample = self.prepare_supervised_sample(sample)
         else:
@@ -402,6 +410,39 @@ class Data_Set_cbg(Dataset):
             **{f"{k}_2": v for k, v in param2.items() if v is not None},
         }
 
+    def prepare_hybrid2_sample_inc(self, sample: dict, augmenter: SampleAugmenter) -> dict:
+        joints25D, _ = convert_to_2_5D(sample["K"], sample["joints3D"])
+        if augmenter.crop:
+            override_jitter = None
+        else:
+            # Zero jitter is added incase the cropping is off. It is done to trigger the
+            # cropping but always with no translation in image.
+            override_jitter = [0, 0]
+
+        #####---simultaneously change the ori img and the hand mask
+        img1, joints1, _ = augmenter.transform_sample(
+            sample["image"],joints25D.clone(), None, override_jitter
+        )
+        param1 = self.get_random_augment_param(augmenter)
+
+        img2, joints2, _ = augmenter.transform_sample(
+            sample["image"], joints25D.clone(), None, override_jitter
+        )
+        param2 = self.get_random_augment_param(augmenter)
+        #####---
+        # Applying only image related transform
+        # Do the below to tensor & norm later
+
+        if self.transform: 
+            img1 = self.transform(img1)
+            img2 = self.transform(img2)
+
+        return {
+            **{"transformed_image1": img1, "transformed_image2": img2},
+            **{"mask": sample["mask"]},
+            **{f"{k}_1": v for k, v in param1.items() if v is not None},
+            **{f"{k}_2": v for k, v in param2.items() if v is not None},
+        }
     def is_training(self, value: bool):
         """Switches the mode of the data.
 
