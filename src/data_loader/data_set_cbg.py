@@ -4,11 +4,13 @@ from easydict import EasyDict as edict
 from src.constants import FREIHAND_DATA, YOUTUBE_DATA
 #########################改改改
 from src.data_loader.freihand_loader_cbg import F_DB_cbg
+
 from src.data_loader.freihand_loader_cbg import F_DB_cbg_inc
 # from src.data_loader.freihand_loader_bgnew import F_DB
 #########################改改改
-# from src.data_loader.sample_augmenter_cbg import SampleAugmenter
-from src.data_loader.sample_augmenter import SampleAugmenter
+from src.data_loader.sample_augmenter_cbg import SampleAugmenter
+# from src.data_loader.sample_augmenter import SampleAugmenter
+
 from src.data_loader.utils import convert_2_5D_to_3D, convert_to_2_5D, JOINTS
 from src.data_loader.youtube_loader import YTB_DB
 from torch.utils.data import Dataset
@@ -67,7 +69,8 @@ class Data_Set_cbg(Dataset):
     def initialize_data_loaders(self):
         if self.source == "freihand":
             #############################改改改
-            self.db = F_DB_cbg_inc(
+            # self.db = F_DB_cbg_inc(
+            self.db = F_DB_cbg(
                 root_dir=FREIHAND_DATA,
                 split=self._split,
                 train_ratio=self.config.train_ratio,
@@ -88,9 +91,9 @@ class Data_Set_cbg(Dataset):
             sample = self.prepare_experiment4_pretraining(sample, self.augmenter)
         elif self.experiment_type == "hybrid2":
             #################################改改改
-            # sample = self.prepare_hybrid2_sample(sample, self.augmenter)
+            sample = self.prepare_hybrid2_sample(sample, self.augmenter)
             
-            sample = self.prepare_hybrid2_sample_inc(sample, self.augmenter)
+            # sample = self.prepare_hybrid2_sample_inc(sample, self.augmenter)
         elif self.experiment_type == "test":
             sample = self.prepare_supervised_sample(sample)
         else:

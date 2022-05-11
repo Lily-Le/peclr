@@ -101,7 +101,7 @@ def main():
         accumulate_grad_batches=train_param.accumulate_grad_batches,
         # resume_from_checkpoint='/home/d3-ai/cll/peclr/data/models/Hybrid2-Frei-cgbgr/9a5d29db6f584042a53343cbe9faa5c0/checkpoints/epoch=69.ckpt',
         # resume_from_checkpoint='/home/d3-ai/cll/peclr/data/models/Hybrid2-Frei-cgbgr/9a5d29db6f584042a53343cbe9faa5c0/checkpoints/epoch=69.ckpt',
-        resume_from_checkpoint = '/home/zlc/cll/code/peclr_cbg/data/models_res18/hybrid2-frei-cgbg/6a61d1fc5a254615a6d2f9071e1e7a44/checkpoints/epoch=14.ckpt',
+        # resume_from_checkpoint = '/home/zlc/cll/code/peclr_cbg/data/models_res18/hybrid2-frei-cgbg/6a61d1fc5a254615a6d2f9071e1e7a44/checkpoints/epoch=14.ckpt',
         gpus="0",
         logger=comet_logger,
         max_epochs=train_param.epochs,

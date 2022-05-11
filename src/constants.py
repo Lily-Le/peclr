@@ -1,6 +1,7 @@
 import os
 BASE_DIR0 = "/home/zlc/cll/code/peclr"
 BASE_DIR = "/home/zlc/cll/code/peclr_cbg"
+RESULT_BASE="/workspace/cll/Exp_results/peclr/"
 # Data paths
 DATA_PATH = BASE_DIR0+"/data/raw/"
 FREIHAND_DATA = os.path.join(DATA_PATH, "freihand_dataset")
@@ -13,10 +14,13 @@ SUPERVISED_CONFIG_PATH = os.path.join(CONFIG_PATH, "supervised_config.json")
 SIMCLR_CONFIG = os.path.join(CONFIG_PATH, "simclr_config.json")
 
 SSL_CONFIG = os.path.join(CONFIG_PATH, "semi_supervised_config.json")
-#------------------------------
-HYBRID2_CONFIG = os.path.join(CONFIG_PATH, "hybrid2_config_res18.json")
-SAVED_MODELS_BASE_PATH = BASE_DIR+"/data/models_res18/peclr"
-SAVED_META_INFO_PATH =BASE_DIR+ "/data/models_res18"
+#------------------------------########改改改
+# HYBRID2_CONFIG = os.path.join(CONFIG_PATH, "hybrid2_config_res18.json")
+HYBRID2_CONFIG = os.path.join(CONFIG_PATH, "hybrid2_config.json")
+# SAVED_MODELS_BASE_PATH = BASE_DIR+"/data/models_res18/peclr"
+# SAVED_META_INFO_PATH =BASE_DIR+ "/data/models_res18"
+SAVED_MODELS_BASE_PATH = RESULT_BASE+"/models_res50/peclr"
+SAVED_META_INFO_PATH =RESULT_BASE+ "/models_res50"
 #------------------------------
 DOWNSTREAM_CONFIG = os.path.join(CONFIG_PATH, "downstream_config.json")
 
@@ -27,9 +31,9 @@ STD_LOGGING_FORMAT = "%(name)s -%(levelname)s - %(message)s"
 COMET_KWARGS = {
     "api_key": '6c13icO732zNn3OMiPfrUcFSm',
     # "project_name":'Hybrid2-FreiYT3d',
-    # "project_name":'Hybrid2-Frei',
-    "project_name":'hybrid2-frei-cgbg',
-    "workspace": 'peclr-res18',
+    # "project_name":'Hybrid2-Frei', ###########改改改
+    "project_name":'hybrid2-frei-cgbg-correct',
+    "workspace": 'peclr-res50',
     "save_dir": SAVED_META_INFO_PATH,
 }
 
