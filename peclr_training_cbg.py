@@ -23,7 +23,7 @@ from src.experiments.utils import (
     update_train_params,
 )
 from src.utils import get_console_logger, read_json
-
+from src.data_loader.wrapped_loader_cbg import WrappedDataLoader
 
 def main():
     # get configs
@@ -64,12 +64,12 @@ def main():
 
     # Control the backround of positive and negative samples
     # Dataloader: just do basic transformations like crop, translation, etc
-    train_data_loader, val_data_loader = get_train_val_split(
+    train_loader, val_loader = get_train_val_split(
         data, batch_size=train_param.batch_size, num_workers=train_param.num_workers
     )
 
-
-    
+    train_data_loader =WrappedDataLoader(train_loader)
+    val_data_loader =WrappedDataLoader(val_loader)
     # For the returned samples in one batch, change the backgrounds accordingly
     # Logger
     experiment_name = prepare_name(
@@ -102,7 +102,7 @@ def main():
         # resume_from_checkpoint='/home/d3-ai/cll/peclr/data/models/Hybrid2-Frei-cgbgr/9a5d29db6f584042a53343cbe9faa5c0/checkpoints/epoch=69.ckpt',
         # resume_from_checkpoint='/home/d3-ai/cll/peclr/data/models/Hybrid2-Frei-cgbgr/9a5d29db6f584042a53343cbe9faa5c0/checkpoints/epoch=69.ckpt',
         # resume_from_checkpoint = '/home/zlc/cll/code/peclr_cbg/data/models_res18/hybrid2-frei-cgbg/6a61d1fc5a254615a6d2f9071e1e7a44/checkpoints/epoch=14.ckpt',
-        gpus="0",
+        gpus="1",
         logger=comet_logger,
         max_epochs=train_param.epochs,
         precision=train_param.precision,

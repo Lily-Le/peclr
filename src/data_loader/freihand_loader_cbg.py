@@ -239,7 +239,8 @@ class F_DB_cbg(Dataset):
         bg_img_new = cv2.cvtColor(cv2.imread(bg_image_new_path),cv2.COLOR_BGR2RGB)
         '''
         fg_img = np.asarray(fg_img)
-        fg_mask = (np.asarray(fg_mask) / 255.)[:, :, None]
+        fg_mask = np.asarray(fg_mask)[:,:,None] 
+        # fg_mask = (np.asarray(fg_mask) / 255.)[:, :, None]
         '''
         # bg_img_new=bg_img_new.copy()
         h, w = fg_img.shape[:2]

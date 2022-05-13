@@ -389,26 +389,26 @@ class Data_Set_cbg(Dataset):
             override_jitter = [0, 0]
 
         #####---simultaneously change the ori img and the hand mask
-        img1, joints1, _ = augmenter.transform_sample(
+        img1,mask1, joints1, _ = augmenter.transform_sample(
             sample["image"], sample["mask"],joints25D.clone(), None, override_jitter
         )
         param1 = self.get_random_augment_param(augmenter)
 
-        img2, joints2, _ = augmenter.transform_sample(
+        img2,mask2, joints2, _ = augmenter.transform_sample(
             sample["image"],sample["mask"], joints25D.clone(), None, override_jitter
         )
         param2 = self.get_random_augment_param(augmenter)
         #####---
         # Applying only image related transform
         # Do the below to tensor & norm later
-
-        if self.transform: 
-            img1 = self.transform(img1)
-            img2 = self.transform(img2)
+##################改改改：to tensor ,norm移到後面
+        # if self.transform: 
+        #     img1 = self.transform(img1)
+        #     img2 = self.transform(img2)
 
         return {
             **{"transformed_image1": img1, "transformed_image2": img2},
-            **{"mask": sample["mask"]},
+            **{"mask1": mask1,"mask2":mask2},
             **{f"{k}_1": v for k, v in param1.items() if v is not None},
             **{f"{k}_2": v for k, v in param2.items() if v is not None},
         }

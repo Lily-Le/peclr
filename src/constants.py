@@ -15,8 +15,8 @@ SIMCLR_CONFIG = os.path.join(CONFIG_PATH, "simclr_config.json")
 
 SSL_CONFIG = os.path.join(CONFIG_PATH, "semi_supervised_config.json")
 #------------------------------########改改改
-# HYBRID2_CONFIG = os.path.join(CONFIG_PATH, "hybrid2_config_res18.json")
-HYBRID2_CONFIG = os.path.join(CONFIG_PATH, "hybrid2_config.json")
+HYBRID2_CONFIG = os.path.join(CONFIG_PATH, "hybrid2_config_res18.json")
+# HYBRID2_CONFIG = os.path.join(CONFIG_PATH, "hybrid2_config.json")
 # SAVED_MODELS_BASE_PATH = BASE_DIR+"/data/models_res18/peclr"
 # SAVED_META_INFO_PATH =BASE_DIR+ "/data/models_res18"
 SAVED_MODELS_BASE_PATH = RESULT_BASE+"/models_res50/peclr"
@@ -32,8 +32,9 @@ COMET_KWARGS = {
     "api_key": '6c13icO732zNn3OMiPfrUcFSm',
     # "project_name":'Hybrid2-FreiYT3d',
     # "project_name":'Hybrid2-Frei', ###########改改改
-    "project_name":'hybrid2-frei-cgbg-correct',
-    "workspace": 'peclr-res50',
+    # "project_name":'hybrid2-frei-cgbg-correct',
+     "project_name":'hybrid2-frei-cgbg-debug',
+    "workspace": 'peclr-new',
     "save_dir": SAVED_META_INFO_PATH,
 }
 
@@ -41,7 +42,8 @@ COMET_KWARGS = {
 MANO_MAT = os.path.join(
     BASE_DIR, "src", "data_loader", "mano_mesh_to_joints_mat.pth"
 )
-
+BG_PIC_PATH ='/home/zlc/cll/data/bg_new'
+BG_IND_PATH ='/home/zlc/cll/data/bg_inds.json'
 # BASE_DIR = os.environ.get("BASE_PATH")
 # # Data paths
 # DATA_PATH = os.environ.get("DATA_PATH")

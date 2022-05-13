@@ -19,10 +19,14 @@ BG_INDS = json_load(BG_IND_PATH)
 ############ Code from HanCo
 def mix(fg_img, mask_fg, bg_img, do_smoothing, do_erosion):
     """ Mix fg and bg image. Keep the fg where mask_fg is True. """
+    
     assert bg_img.shape == fg_img.shape
+    mask_fg = mask_fg/255.
     fg_img = fg_img.copy()
     mask_fg = mask_fg.copy()
     bg_img = bg_img.copy()
+    
+    
 
     if len(mask_fg.shape) == 2:
         mask_fg = np.expand_dims(mask_fg, -1)
@@ -98,7 +102,7 @@ class SampleAugmenter:
         image_, joints_,mask_ = image.copy(), joints.clone(),mask.copy()
         transformation_matrix = np.identity(3)
         #############---------- change background
-        image_, _ = self.change_bg(image_,mask_, None)
+        # image_, _ = self.change_bg(image_,mask_, None)
 
         # augmentations to be applied in beginning
         if self.sobel_filter and random.getrandbits(1):
@@ -108,7 +112,7 @@ class SampleAugmenter:
             self._sobel_filter = False
         if self.cut_out and random.getrandbits(1):
             self._cut_out = True
-            image_, _ = self.cut_out_sample(image_, joints_)
+            image_,mask_, _ = self.cut_out_sample(image_, mask_,joints_)
         else:
             self._cut_out = False
 
@@ -120,17 +124,16 @@ class SampleAugmenter:
 
         if self.rotate or override_angle is not None:
             self._rotate = True
-            image_, joints_, rot_mat = self.rotate_sample(
-                image_, joints_, override_angle
-            )
+            image_, mask_,joints_,rot_mat = self.rotate_sample(
+                image_,mask_, joints_,override_angle)
             transformation_matrix = np.concatenate((rot_mat, np.array([[0, 0, 1]])))
         else:
             self._rotate = False
 
         if self.crop or override_jitter is not None:
             self._crop = True
-            image_, joints_, xy_shift = self.crop_sample(
-                image_, joints_, override_jitter
+            image_, mask_,joints_, xy_shift = self.crop_sample(
+                image_,mask_, joints_, override_jitter
             )
             transformation_matrix[0, -1] -= xy_shift[0]
             transformation_matrix[1, -1] -= xy_shift[1]
@@ -139,7 +142,7 @@ class SampleAugmenter:
         # augmentations to be applied in the end.
 
         if self.resize:
-            image_, joints_, factor = self.resize_sample(image_, joints_)
+            image_, mask_,joints_, factor = self.resize_sample(image_,mask_,joints_)
             transformation_matrix[0] = transformation_matrix[0] * factor[0]
             transformation_matrix[1] = transformation_matrix[1] * factor[1]
 
@@ -161,7 +164,7 @@ class SampleAugmenter:
         else:
             self._color_drop = False
 
-        return image_, joints_, transformation_matrix
+        return image_,mask_, joints_, transformation_matrix
 
     def sobel_filter_sample(
         self, image: np.array, joints: JOINTS_25D
@@ -197,9 +200,9 @@ class SampleAugmenter:
         """
         image += cv2.randn(np.zeros(image.shape, np.uint8), (0), (self.noise_std,) * 3)
         return image, joints
-
+################3
     def crop_sample(
-        self, image: np.array, joints: JOINTS_25D, jitter: float = None
+        self, image: np.array,  mask: np.array, joints: JOINTS_25D, jitter: float = None
     ) -> Tuple[np.array, JOINTS_25D, tuple]:
         """Crops the sample around a crop box conataining all key points..
 
@@ -217,12 +220,13 @@ class SampleAugmenter:
 
         return (
             image[origin_y : origin_y + side, origin_x : origin_x + side, :],
+            mask[origin_y : origin_y + side, origin_x : origin_x + side],
             joints,
             (origin_x, origin_y),
         )
 
     def resize_sample(
-        self, image: np.array, joints: JOINTS_25D
+        self, image: np.array, mask: np.array, joints: JOINTS_25D
     ) -> Tuple[np.array, JOINTS_25D, tuple]:
         """Resizes the sample to given size.
 
@@ -240,6 +244,7 @@ class SampleAugmenter:
 
         try:
             image = cv2.resize(image, self.resize_shape, interpolation=cv2.INTER_AREA)
+            mask = cv2.resize(mask, self.resize_shape, interpolation=cv2.INTER_AREA)
             factor_height = self.resize_shape[1] / height
             factor_width = self.resize_shape[0] / width
             joints[:, 0] = joints[:, 0] * factor_width
@@ -247,10 +252,10 @@ class SampleAugmenter:
         except Exception as e:
             print(height, width, self.resize_shape)
             print(e)
-        return image, joints, (factor_width, factor_height)
-
+        return image, mask,joints, (factor_width, factor_height)
+##################改改
     def rotate_sample(
-        self, image: np.array, joints: JOINTS_25D, angle: float = None
+        self, image: np.array,  mask: np.array, joints: JOINTS_25D, angle: float = None
     ) -> Tuple[np.array, JOINTS_25D, np.array]:
         """Rotates the sample image and the 2D keypoints by a random angle about the
         crop box center with jitter 0 and crop_margin 1.5. The relative depth is not
@@ -272,12 +277,13 @@ class SampleAugmenter:
         center = int(origin_x + side / 2), int(origin_y + side / 2)
         rot_mat = self.get_rotation_matrix(center=center, angle=angle)
         image = cv2.warpAffine(image, rot_mat, (width, height))
+        mask = cv2.warpAffine(mask, rot_mat, (width, height))
         # image[center[1]-2:center[1]+2, center[0]-2:center[0]+2, :] = 0
         joints_ = joints.clone()
         joints_[:, -1] = 1.0
         joints_ = joints_ @ rot_mat.T
         joints[:, :-1] = joints_
-        return image, joints, rot_mat
+        return image, mask,joints, rot_mat
 
     def color_drop_sample(
         self, image: np.array, joints: JOINTS_25D
@@ -352,7 +358,7 @@ class SampleAugmenter:
         return image, joints
 
     def cut_out_sample(
-        self, image: np.array, joints: JOINTS_25D
+        self, image: np.array,mask: np.array, joints: JOINTS_25D
     ) -> Tuple[np.array, JOINTS_25D]:
         """Randomly cuts out a rectangle from the image. The largest
         dimesion of the rectangle is 50% of the image dimesions.
@@ -376,7 +382,10 @@ class SampleAugmenter:
             image[
                 dim0_bounds[0] : dim0_bounds[1], dim1_bounds[0] : dim1_bounds[1]
             ] = np.uint8(np.random.randint(0, 255, 1))
-        return image, joints
+            mask[
+                dim0_bounds[0] : dim0_bounds[1], dim1_bounds[0] : dim1_bounds[1]
+            ] = np.uint8(np.random.randint(0, 255, 1))
+        return image,mask, joints
 
     def get_random_cut_out_box(
         self,
